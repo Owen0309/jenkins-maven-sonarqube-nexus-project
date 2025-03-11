@@ -1,5 +1,9 @@
+def COLOR_MAP = [
+    'SUCCESS': 'good', 
+    'FAILURE': 'danger',
+    'UNSTABLE': 'danger'
+]
 pipeline {
-  agent any
   stages {
     stage('Validate Project') {
         steps {
@@ -29,9 +33,9 @@ pipeline {
     stage('SonarQube Inspection') {
         steps {
             sh  """mvn sonar:sonar \
-                   -Dsonar.projectKey=java-webapp-project \
-                   -Dsonar.host.url=http://172.31.59.32:9000 \
-                   -Dsonar.login=0f18e125656690ff8d6bafd806d9c14b4142e702"""
+                   -Dsonar.projectKey=PROVIDE_YOUR_SONAR_PROJECT_NAME \
+                   -Dsonar.host.url=http://PROVIDE_YOUR_SONAR_IP:9000 \
+                   -Dsonar.login=PROVIDE_YOUR_SONAR_TOKEN"""
         }
     } 
     stage("Upload Artifact To Nexus"){
@@ -43,6 +47,14 @@ pipeline {
               echo 'Successfully Uploaded Artifact to Nexus Artifactory'
         }
       }
+    }
+  }
+  post {
+    always {
+        echo 'Slack Notifications.'
+        slackSend channel: '#devops', //update and provide your channel name
+        color: COLOR_MAP[currentBuild.currentResult],
+        message: "*${currentBuild.currentResult}:* Job Name '${env.JOB_NAME}' build ${env.BUILD_NUMBER} \n Build Timestamp: ${env.BUILD_TIMESTAMP} \n Project Workspace: ${env.WORKSPACE} \n More info at: ${env.BUILD_URL}"
     }
   }
 }
