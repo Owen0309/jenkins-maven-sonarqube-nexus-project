@@ -4,7 +4,6 @@ def COLOR_MAP = [
     'UNSTABLE': 'danger'
 ]
 pipeline {
-  agent any 
   stages {
     stage('Validate Project') {
         steps {
